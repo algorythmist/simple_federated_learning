@@ -1,2 +1,3 @@
-# simple_federated_learning
+# Simple Federated Learning
+
 A POC demonstrating federated learning
