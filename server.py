@@ -42,6 +42,7 @@ class FederatedServer:
     def __scale_model_weights(scalar, weights):
         return [scalar * w for w in weights]
 
+    #TODO: Simplify weighted average calculation
     @staticmethod
     def __aggregate_scaled_weights(scaled_weights):
         """

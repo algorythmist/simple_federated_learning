@@ -3,7 +3,6 @@ import numpy as np
 
 from client import FederatedClient
 
-
 def shuffle_together(*arrays, seed=None):
     """
     Shuffle arrays in unison
@@ -82,3 +81,22 @@ def create_clients(shards, prefix='client', create_model_fn=build_and_compile_si
     client_names = ['{}_{}'.format(prefix, i + 1) for i in range(num_clients)]
     return [FederatedClient(client_names[i], create_model_fn(), shards[i])
             for i in range(len(client_names))]
+
+
+class HistoryTracker:
+    """
+    Track the history of a classifier's accuracy on the test set
+    """
+
+    def __init__(self, model):
+        self.model = model
+        self.loss_history = []
+        self.accuracy_history = []
+
+    def __call__(self, X_test, y_test):
+        loss, accuracy = self.model.evaluate(X_test, y_test)
+        self.loss_history.append(loss)
+        self.accuracy_history.append(accuracy)
+
+    def get_history(self):
+        return self.loss_history, self.accuracy_history
