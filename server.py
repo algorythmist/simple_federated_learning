@@ -6,7 +6,7 @@ class FederatedServer:
     The central server coordinates training by aggregating model weights from clients.
     """
 
-    def __init__(self, model, clients, batch_size = 1, client_epochs=5):
+    def __init__(self, model, clients, batch_size=1, client_epochs=5):
         """
         :param model: The model maintained by the server
         :param clients: An array of ClientNode objects
@@ -27,24 +27,24 @@ class FederatedServer:
         for iteration in range(iterations):
             print(f"Server iteration {iteration}")
             local_weights = self.training_step()
-            scaled_weights = self.__scale_weights(local_weights.values())
-            average_weights = self.__aggregate_scaled_weights(scaled_weights)
+            scaled_weights = self._scale_weights(local_weights.values())
+            average_weights = self._aggregate_scaled_weights(scaled_weights)
             # update global model
             self.model.set_weights(average_weights)
             if evaluate_fn:
                 evaluate_fn(self.model)
 
-    def __scale_weights(self, local_weights):
+    @staticmethod
+    def _scale_weights(local_weights):
         total_samples = float(sum([size for size, _ in local_weights]))
-        return [self.__scale_model_weights(size / total_samples, weights) for size, weights in local_weights]
+        return [FederatedServer._scale_client_weights(size / total_samples, weights) for size, weights in local_weights]
 
     @staticmethod
-    def __scale_model_weights(scalar, weights):
+    def _scale_client_weights(scalar, weights):
         return [scalar * w for w in weights]
 
-    #TODO: Simplify weighted average calculation
     @staticmethod
-    def __aggregate_scaled_weights(scaled_weights):
+    def _aggregate_scaled_weights(scaled_weights):
         """
         Return the sum of the listed scaled weights.
         The is equivalent to scaled average of the weights
@@ -62,6 +62,6 @@ class FederatedServer:
         for client in self.clients:
             print(f"Fitting local model for client {client.name}")
             local_weights[client.name] = client.train(global_weights,
-                                                      batch_size = self.batch_size,
+                                                      batch_size=self.batch_size,
                                                       epochs=self.client_epochs)
         return local_weights

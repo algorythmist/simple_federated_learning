@@ -3,6 +3,7 @@ import numpy as np
 
 from client import FederatedClient
 
+
 def shuffle_together(*arrays, seed=None):
     """
     Shuffle arrays in unison
@@ -45,7 +46,7 @@ def split_data(features, labels, shard_ratios):
 def build_simple_model():
     """
     A simple model for classifying 28x28 images
-    :return:
+    :return: the model
     """
     return keras.Sequential([
         keras.layers.Flatten(input_shape=[28, 28]),
@@ -59,11 +60,11 @@ def build_simple_model():
 def build_and_compile_simple_model():
     """
     A simple model for classifying 28x28 images, compiled for training
-    :return:
+    :return: the compiled model
     """
     model = build_simple_model()
     model.compile(loss=keras.losses.sparse_categorical_crossentropy,
-                  optimizer='sgd',
+                  optimizer='adam',
                   metrics=[keras.metrics.sparse_categorical_accuracy])
     return model
 
@@ -88,13 +89,14 @@ class HistoryTracker:
     Track the history of a classifier's accuracy on the test set
     """
 
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, X_test, y_test):
+        self.X_test = X_test
+        self.y_test = y_test
         self.loss_history = []
         self.accuracy_history = []
 
-    def __call__(self, X_test, y_test):
-        loss, accuracy = self.model.evaluate(X_test, y_test)
+    def __call__(self, model):
+        loss, accuracy = model.evaluate(self.X_test, self.y_test)
         self.loss_history.append(loss)
         self.accuracy_history.append(accuracy)
 
